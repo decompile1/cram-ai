@@ -3,7 +3,7 @@ services:
     build: .
     container_name: cram-api
     ports:
-      - "8003:8003"
+      - "2727:8003"
     restart: unless-stopped
     environment:
       HF_HOME: /app/.cache/huggingface
