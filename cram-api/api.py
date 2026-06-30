@@ -2,7 +2,7 @@ import os
 import json
 import re
 import requests
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -29,7 +29,7 @@ async def generate_cram_set(request: CramRequest):
 You are an AI specialized in the College Board {request.course} curriculum.
 Extract key concepts strictly aligned to the official Course and Exam Description (CED).
 
-Output ONLY valid JSON with exactly two keys: flashcards and quiz.
+Output a JSON object with exactly two keys: "flashcards" and "quiz". Do not include any conversational text.
 """
 
     messages = [
@@ -41,6 +41,7 @@ Output ONLY valid JSON with exactly two keys: flashcards and quiz.
         "model": MODEL_NAME,
         "messages": messages,
         "stream": False,
+        "format": "json", 
         "temperature": 0.2,
         "options": {
             "top_p": 0.9,
@@ -48,20 +49,19 @@ Output ONLY valid JSON with exactly two keys: flashcards and quiz.
         }
     }
 
-    response = requests.post(
-        f"{OLLAMA_URL}/api/chat",
-        json=payload,
-        timeout=120
-    )
+    try:
+        response = requests.post(
+            f"{OLLAMA_URL}/api/chat",
+            json=payload,
+            timeout=120
+        )
+        response.raise_for_status()
+        
+        result = response.json()["message"]["content"].strip()
 
-    response.raise_for_status()
-
-    result = response.json()["message"]["content"].strip()
-
-    if result.startswith("```"):
-        result = re.sub(r"```(?:json)?", "", result).strip("` \n")
-
-    return json.loads(result)
+        # Clean markdown code blocks if the model still insists on including them
+        if result.startswith("```"):
+            result = re.sub(r"^```json\s*|\s*```$", "", result, flags=re.MULTILINE)
 
 # ./venv/bin/uvicorn api:app --host 0.0.0.0 --port 8003
-# docker compose -f docker-compose.gpu.yml up -d --build
+# docker compose -f docker-compose.gpu up -d --build
