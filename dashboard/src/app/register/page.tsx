@@ -71,7 +71,7 @@ export default function Register() {
     <div className="min-h-screen bg-slate-900 flex justify-center items-center px-4">
       <div className="bg-slate-800 p-8 rounded-2xl w-full max-w-md border border-slate-700 shadow-xl">
         <h2 className="text-3xl font-black text-white text-center mb-2">Create Account</h2>
-        <p className="text-slate-400 text-sm text-center mb-6">Start mastering your AP/IB courses</p>
+        <p className="text-slate-400 text-sm text-center mb-6">Start today by adding Cram.AI to your workflow!</p>
         
         {error && (
           <div className="bg-red-500/20 text-red-400 p-3 rounded-lg text-sm mb-4 border border-red-500/30">

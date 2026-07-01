@@ -7,8 +7,8 @@ export const generateCramSetDoc = inngest.createFunction(
     id: "generate-cram-set-job",
     name: "AI Cram Generation Handler",
     retries: 2,
-    triggers: { 
-      event: "app/cram.requested" 
+    triggers: {
+      event: "app/cram.requested",
     },
     throttle: {
       limit: 5,
@@ -16,52 +16,44 @@ export const generateCramSetDoc = inngest.createFunction(
       key: "event.data.studySetId",
     },
   },
-  async ({ event, step }: {
-    event: { 
-      data: { 
-        studySetId: string; 
-        rawText: string; 
-        courseName: string; 
-      } 
-    }; 
-    step: any; 
-  }) => {
-    const { studySetId, rawText, courseName } = event.data;
+  async ({ event, step }) => {
+    const { studySetId, rawText, studyGoal, outputType, difficulty } =
+      event.data;
 
     const aiGeneratedData = await step.run("call-llm-api", async () => {
-
       const backendUrl = env.CRAM_AI_ROUTE;
 
-      const response = await fetch(`${backendUrl}/api/generate-cram-set`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          course: courseName,
-          study_material: rawText,
-        }),
-      });
+      const response = await fetch(
+        `${backendUrl}/api/generate-cram-set`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            study_goal: studyGoal,
+            output_type: outputType,
+            difficulty,
+            study_material: rawText,
+          }),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`FastAPI backend returned error: ${response.statusText} (${response.status})`);
+        throw new Error(
+          `FastAPI backend returned error: ${response.statusText} (${response.status})`
+        );
       }
 
-      // Parse the raw JSON string returned by your Python script
-      const rawJsonString = await response.json();
-      
-      const parsedData = typeof rawJsonString === "string" ? JSON.parse(rawJsonString) : rawJsonString;
-      
-      return parsedData;
+      const raw = await response.json();
+      return typeof raw === "string" ? JSON.parse(raw) : raw;
     });
 
-    // Step 2: Save the structured flashcards directly to your studySet model column row
     await step.run("save-to-postgres", async () => {
       await db.studySet.update({
         where: { id: studySetId },
         data: {
-          // Saving the parsed flashcards array directly into the Json column field
-          cards: aiGeneratedData.flashcards || [],
+          cards: aiGeneratedData.flashcards ?? [],
         },
       });
     });

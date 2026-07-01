@@ -13,7 +13,10 @@ CREATE TABLE "User" (
 CREATE TABLE "StudySet" (
     "id" TEXT NOT NULL,
     "title" TEXT NOT NULL,
-    "course" TEXT NOT NULL,
+    "studyGoal" TEXT,
+    "outputType" TEXT,
+    "difficulty" TEXT,
+    "examDate" TIMESTAMP(3),
     "cards" JSONB NOT NULL,
     "userId" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
