@@ -1,10 +1,9 @@
 import os
 import json
-import re
 import requests
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
+from pydantic import BaseModel, ValidationError
 
 app = FastAPI()
 
@@ -27,22 +26,43 @@ class CramRequest(BaseModel):
     study_material: str
 
 
+class Flashcard(BaseModel):
+    question: str
+    answer: str
+
+
+class QuizItem(BaseModel):
+    question: str
+    options: list[str]
+    answer: str
+
+
+class CramResponse(BaseModel):
+    flashcards: list[Flashcard]
+    quiz: list[QuizItem]
+
+
 @app.post("/api/generate-cram-set")
 async def generate_cram_set(request: CramRequest):
     system_prompt = f"""
-You are an expert AI tutor.
+You are a strict educational extraction engine.
 
-Your job is to transform study material into structured learning content.
+You MUST ONLY use information found in the provided study material.
+Do NOT add outside knowledge.
 
-Follow these strict rules:
-- Focus on the user's study goal: {request.studyGoal}
-- Adapt difficulty to: {request.difficulty}
-- Output style: {request.outputType}
+If something is not in the text, do NOT include it.
 
-You are not limited to any single curriculum or exam system.
-You can generate content for any academic subject, exam, or learning context.
+Transform ONLY the given content into structured learning material.
 
-Return ONLY valid JSON with this exact structure:
+Constraints:
+- Study Goal: {request.studyGoal}
+- Output Type: {request.outputType}
+- Difficulty: {request.difficulty}
+
+IMPORTANT RULE:
+Everything in flashcards and quiz MUST come directly from the study material.
+
+Return ONLY valid JSON:
 
 {{
   "flashcards": [
@@ -59,13 +79,6 @@ Return ONLY valid JSON with this exact structure:
     }}
   ]
 }}
-
-Rules:
-- No markdown
-- No explanations
-- No extra keys
-- Ensure flashcards are concise but conceptually complete
-- Difficulty must influence depth of explanations
 """
 
     messages = [
@@ -93,23 +106,35 @@ Rules:
         )
         response.raise_for_status()
 
-        result = response.json()["message"]["content"].strip()
+        raw = response.json()["message"]["content"]
 
-        if result.startswith("```"):
-            result = re.sub(r"^```json\s*|\s*```$", "", result, flags=re.MULTILINE)
+        if isinstance(raw, dict):
+            parsed = raw
+        else:
+            text = str(raw).strip()
 
-        parsed = json.loads(result)
+            # safe cleanup only (no over-reliance)
+            if text.startswith("```"):
+                text = text.replace("```json", "").replace("```", "").strip()
 
-        if "flashcards" not in parsed:
-            raise ValueError("Missing flashcards in model output")
+            try:
+                parsed = json.loads(text)
+            except json.JSONDecodeError:
+                # final fallback for double-encoded outputs
+                parsed = json.loads(json.loads(text))
 
-        return parsed
+        validated = CramResponse.model_validate(parsed)
+
+        return validated.model_dump()
+
+    except ValidationError as e:
+        raise HTTPException(
+            status_code=500,
+            detail=f"Invalid model structure: {str(e)}"
+        )
 
     except Exception as e:
         raise HTTPException(
             status_code=500,
             detail=f"Failed to generate cram set: {str(e)}"
         )
-
-# ./venv/bin/uvicorn api:app --host 0.0.0.0 --port 8003
-# docker compose -f docker-compose.gpu up -d --build

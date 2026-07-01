@@ -34,7 +34,9 @@ export async function POST(request: Request) {
     const newStudySet = await db.studySet.create({
       data: {
         title,
-        course: studyGoal,
+        studyGoal,
+        outputType,
+        difficulty,
         cards: [],
         userId: session.user.id,
       },
