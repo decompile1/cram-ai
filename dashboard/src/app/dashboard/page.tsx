@@ -16,17 +16,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(false);
   const [statusMessage, setStatusMessage] = useState('');
 
-  const [flashcards, setFlashcards] = useState<Flashcard[]>([
-    {
-      question: 'Welcome to cram.ai!',
-      answer:
-        "Paste your notes on the left and click 'Transform' to generate custom study materials.",
-    },
-  ]);
-
-  const [currentCardIndex, setCurrentCardIndex] = useState(0);
-  const [isFlipped, setIsFlipped] = useState(false);
-
   const handleCramGeneration = async () => {
     if (!notes.trim()) {
       setStatusMessage('⚠️ Please paste some notes before generating!');
@@ -55,14 +44,8 @@ export default function Dashboard() {
 
       if (response.ok) {
         setStatusMessage(
-          '✨ AI Job added to queue! Check your Inngest dashboard.'
+          'Cram AI is now generating your flashcards! This may take a few moments. Check "Past Study Sets" to view your study set'
         );
-
-        if (data.flashcards && data.flashcards.length > 0) {
-          setFlashcards(data.flashcards);
-          setCurrentCardIndex(0);
-          setIsFlipped(false);
-        }
       } else {
         setStatusMessage(
           `❌ Error: ${
@@ -191,73 +174,6 @@ export default function Dashboard() {
               'Generate Study Materials'
             )}
           </button>
-        </section>
-
-        <section className="flex flex-col items-center justify-center space-y-6">
-          <h2 className="text-xl font-bold self-start text-slate-400">
-            Interactive Recall Center
-          </h2>
-
-          <div
-            onClick={() =>
-              setIsFlipped(!isFlipped)
-            }
-            className="w-full h-64 bg-gradient-to-br from-slate-800 to-slate-900 rounded-3xl p-8 flex flex-col justify-center items-center text-center border border-slate-700 cursor-pointer shadow-2xl relative select-none hover:border-indigo-500 transition duration-300"
-          >
-            <span className="absolute top-4 left-6 text-xs font-bold text-indigo-400 tracking-widest uppercase">
-              {isFlipped
-                ? 'Answer'
-                : 'Question'}
-            </span>
-
-            <p className="text-xl font-medium px-4 transition-all duration-200">
-              {isFlipped
-                ? flashcards[currentCardIndex]
-                    ?.answer
-                : flashcards[currentCardIndex]
-                    ?.question}
-            </p>
-
-            <span className="absolute bottom-4 text-xs text-slate-500">
-              Click card to flip
-            </span>
-          </div>
-
-          <div className="flex items-center space-x-6">
-            <button
-              disabled={currentCardIndex === 0}
-              onClick={() => {
-                setCurrentCardIndex(
-                  (prev) => prev - 1
-                );
-                setIsFlipped(false);
-              }}
-              className="bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 p-3 rounded-full text-lg transition"
-            >
-              ⬅️
-            </button>
-
-            <span className="text-slate-400 font-medium">
-              {currentCardIndex + 1} of{' '}
-              {flashcards.length}
-            </span>
-
-            <button
-              disabled={
-                currentCardIndex ===
-                flashcards.length - 1
-              }
-              onClick={() => {
-                setCurrentCardIndex(
-                  (prev) => prev + 1
-                );
-                setIsFlipped(false);
-              }}
-              className="bg-slate-800 hover:bg-slate-700 disabled:opacity-30 disabled:hover:bg-slate-800 p-3 rounded-full text-lg transition"
-            >
-              ➡️
-            </button>
-          </div>
         </section>
       </main>
     </div>

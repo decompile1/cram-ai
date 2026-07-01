@@ -23,19 +23,21 @@ export default function Register() {
   } = useForm<SignUpFormValues>({
     resolver: zodResolver(signUpSchema),
     defaultValues: {
+      name: '',
       email: '',
       password: '',
     },
     mode: 'onChange',
   });
 
+  const name = watch('name');
   const email = watch('email');
   const password = watch('password');
 
   // Tracks structural completion values to handle reactive button validation states
   useEffect(() => {
-    setIsFormValid(!!email && !!password);
-  }, [email, password]);
+    setIsFormValid(!!email && !!password && !!name);
+  }, [email, password, name]);
 
   const onSubmit = async (data: SignUpFormValues) => {
     setIsLoading(true);
@@ -53,6 +55,7 @@ export default function Register() {
     // 2. Automate user session sign-in using NextAuth standard credentials engine
     const signInResult = await signIn('credentials', {
       redirect: false,
+      name: data.name,
       email: data.email,
       password: data.password,
     });
@@ -81,15 +84,31 @@ export default function Register() {
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 text-white">
           <div>
+            <label htmlFor="name" className="block text-sm font-semibold mb-1 text-slate-300">
+              Username
+            </label>
+            <input 
+              id="name"
+              type="text" 
+              {...register('name')}
+              className="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg focus:outline-none focus:border-indigo-500 text-white placeholder-slate-500" 
+              placeholder="Enter your username here"
+            />
+            {errors.name && (
+              <p className="mt-1 text-xs text-red-400 font-medium">{errors.name.message}</p>
+            )}
+          </div>
+
+          <div>
             <label htmlFor="email" className="block text-sm font-semibold mb-1 text-slate-300">
-              School Email
+              Email
             </label>
             <input 
               id="email"
               type="email" 
               {...register('email')}
               className="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg focus:outline-none focus:border-indigo-500 text-white placeholder-slate-500" 
-              placeholder="you@school.edu"
+              placeholder="you@gmail.com"
             />
             {errors.email && (
               <p className="mt-1 text-xs text-red-400 font-medium">{errors.email.message}</p>
@@ -105,7 +124,7 @@ export default function Register() {
               type="password" 
               {...register('password')}
               className="w-full bg-slate-900 border border-slate-700 p-3 rounded-lg focus:outline-none focus:border-indigo-500 text-white placeholder-slate-500" 
-              placeholder="••••••••"
+              placeholder="type your password here"
             />
             {errors.password && (
               <p className="mt-1 text-xs text-red-400 font-medium">{errors.password.message}</p>

@@ -41,6 +41,37 @@ class CramResponse(BaseModel):
     flashcards: list[Flashcard]
     quiz: list[QuizItem]
 
+class PDFRequest(BaseModel):
+    text: str
+
+@app.post("/api/summarize-pdf")
+async def summarize_pdf(request: PDFRequest):
+
+    system_prompt = """
+You are an expert study assistant.
+
+Your job:
+1. Summarize the given document clearly
+2. Extract key concepts
+3. Create flashcards for studying
+
+Return ONLY valid JSON:
+
+{
+  "summary": "...",
+  "flashcards": [
+    {
+      "question": "...",
+      "answer": "..."
+    }
+  ]
+}
+
+Rules:
+- No markdown
+- No extra text
+- Keep summary concise but complete
+"""
 
 @app.post("/api/generate-cram-set")
 async def generate_cram_set(request: CramRequest):
@@ -83,7 +114,8 @@ Return ONLY valid JSON:
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": request.study_material}
+        {"role": "user", "content": request.study_material},
+        {"role": "user", "content": request.text[:12000]}
     ]
 
     payload = {

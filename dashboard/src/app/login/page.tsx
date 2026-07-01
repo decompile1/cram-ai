@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { signIn } from "next-auth/react";
 
 export default function Login() {
+  const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,6 +21,7 @@ const handleSubmit = async (e: React.FormEvent) => {
   try {
     // Execute NextAuth client-side credentials authentication sign-in routine
     const result = await signIn("credentials", {
+      name,
       email,
       password,
       redirect: false,
@@ -68,14 +70,26 @@ const handleSubmit = async (e: React.FormEvent) => {
 
         <form onSubmit={handleSubmit} className="space-y-5 text-white">
           <div>
-            <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-400">School Email</label>
+            <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-400">Email</label>
+            <input 
+              type="text" 
+              required
+              value={name} 
+              onChange={(e) => setName(e.target.value)} 
+              className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition placeholder-slate-600" 
+              placeholder="Type your username"
+            />
+          </div>
+
+          <div>
+            <label className="block text-xs font-bold uppercase tracking-wider mb-2 text-slate-400">Email</label>
             <input 
               type="email" 
               required 
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
               className="w-full bg-slate-950 border border-slate-800 p-3.5 rounded-xl text-white focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition placeholder-slate-600" 
-              placeholder="you@school.edu"
+              placeholder="you@gmail.com"
             />
           </div>
           

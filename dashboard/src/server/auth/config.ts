@@ -93,11 +93,13 @@ export const authConfig = {
       user: {
         ...session.user,
         id: token.sub,
+        image: token.image as string | null,
       },
     }),
     jwt: ({ token, user }) => {
       if (user) {
         token.id = user.id;
+        token.image = user.image;
       }
       return token;
     },

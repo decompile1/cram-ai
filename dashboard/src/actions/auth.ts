@@ -8,18 +8,27 @@ export async function signUp(data: SignUpFormValues) {
   try {
     const validatedData = await signUpSchema.parseAsync(data);
 
-    const existingUser = await db.user.findUnique({
+    const existingUserByEmail = await db.user.findUnique({
       where: { email: validatedData.email },
     });
 
-    if (existingUser) {
+    if (existingUserByEmail) {
       return { error: "Email already in use" };
+    }
+
+    const existingUserByName = await db.user.findFirst({
+      where: { name: validatedData.name },
+    });
+
+    if (existingUserByName) {
+      return { error: "Username already in use" };
     }
 
     const hashedPassword = await bcrypt.hash(validatedData.password, 10);
 
     await db.user.create({
       data: {
+        name: validatedData.name,
         email: validatedData.email,
         password: hashedPassword,
       },

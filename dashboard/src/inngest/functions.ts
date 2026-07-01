@@ -31,8 +31,8 @@ export const generateCramSetDoc = inngest.createFunction(
             "Content-Type": "application/json",
           },
           body: JSON.stringify({
-            study_goal: studyGoal,
-            output_type: outputType,
+            studyGoal,
+            outputType,
             difficulty,
             study_material: rawText,
           }),

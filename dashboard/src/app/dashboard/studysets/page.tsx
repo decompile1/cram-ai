@@ -64,7 +64,7 @@ export default function PastStudySetsPage() {
             {studySets.map((deck) => (
               <Link
                 key={deck.id}
-                href={`/studysets/${deck.id}`}
+                href={`/dashboard/studysets/${deck.id}`}
                 className="block bg-slate-900 border border-slate-800 rounded-2xl p-6 hover:border-indigo-500 transition"
               >
                 <h2 className="text-xl font-bold">{deck.title}</h2>

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { inngest } from "@/inngest/client";
-import { getPresignedUrl, getUploadUrl } from "@/lib/s3";
+import { getPresignedUrl, getAvatarUrl } from "@/lib/s3";
 // import { auth } from "@/server/auth";
 import { db } from "@/server/db";
 import { ServiceType } from "@/types/services";
@@ -184,5 +184,5 @@ export async function generateUploadUrl(fileType: string) {
     throw new Error("User not authenticated");
   }
 
-  return await getUploadUrl(fileType);
+  return await getAvatarUrl(fileType);
 }
