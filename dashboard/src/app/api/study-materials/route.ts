@@ -32,7 +32,12 @@ export async function GET() {
       },
     });
 
-    return NextResponse.json(studySets);
+  const notes = await db.notes.findMany({
+    where: { userId: session.user.id },
+    orderBy: { createdAt: "desc" },
+  });
+
+    return NextResponse.json({ studySets, notes });
   } catch (error) {
     console.error('Failed to fetch study sets:', error);
 

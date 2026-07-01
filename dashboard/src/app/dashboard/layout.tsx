@@ -67,8 +67,8 @@ export default function RootLayout({
         { name: "Dashboard", value: "/", icon: HiHome },
         { name: "AI Summary", value: "/ai-summary", icon: HiEmojiHappy },
         {
-          name: "Your Study Sets",
-          value: "/studysets",
+          name: "Your Study Materials",
+          value: "/study-materials",
           icon: HiPaperAirplane,
         },
       ],

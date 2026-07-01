@@ -73,6 +73,36 @@ Rules:
 - Keep summary concise but complete
 """
 
+    messages = [
+        {"role": "system", "content": system_prompt},
+        {"role": "user", "content": request.text[:12000]},
+    ]
+
+    payload = {
+        "model": MODEL_NAME,
+        "messages": messages,
+        "stream": False,
+        "format": "json",
+        "temperature": 0.3,
+    }
+
+    try:
+        response = requests.post(
+            f"{OLLAMA_URL}/api/chat",
+            json=payload,
+            timeout=120
+        )
+        response.raise_for_status()
+
+        raw = response.json()["message"]["content"]
+        parsed = raw if isinstance(raw, dict) else json.loads(raw)
+
+        return parsed
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
 @app.post("/api/generate-cram-set")
 async def generate_cram_set(request: CramRequest):
     system_prompt = f"""
@@ -114,8 +144,7 @@ Return ONLY valid JSON:
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": request.study_material},
-        {"role": "user", "content": request.text[:12000]}
+        {"role": "user", "content": request.study_material[:12000]},
     ]
 
     payload = {

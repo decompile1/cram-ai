@@ -43,7 +43,8 @@ model User {
   createdAt DateTime   @default(now())
   accounts            Account[]
   sessions            Session[]
-  studySets StudySet[]
+  studySets           StudySet[]
+  notes               Notes[]
 }
 
 model StudySet {
@@ -57,4 +58,14 @@ model StudySet {
   userId       String
   user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   createdAt    DateTime  @default(now())
+}
+
+model Notes {
+  id        String   @id @default(cuid())
+  userId    String
+  title     String
+  rawText   String
+  summary   String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
