@@ -58,6 +58,7 @@ Output a JSON object with exactly two keys: "flashcards" and "quiz". Do not incl
         response.raise_for_status()
         
         result = response.json()["message"]["content"].strip()
+        print(result)
 
         # Clean markdown code blocks if the model still insists on including them
         if result.startswith("```"):
